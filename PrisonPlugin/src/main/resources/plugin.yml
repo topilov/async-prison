@@ -1,0 +1,9 @@
+name: Prison
+version: '${project.version}'
+main: me.topilov.App
+api-version: 1.13
+commands:
+  menu: {}
+  mines: {}
+  mine: {}
+  shop: {}

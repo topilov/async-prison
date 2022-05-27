@@ -1,0 +1,12 @@
+mines:
+  1:
+    name: "Листья I"
+    level: 1
+    pvp: "§eНет"
+  2:
+    name: "Листья II"
+    level: 2
+    pvp:
+      -
+      -
+      -
