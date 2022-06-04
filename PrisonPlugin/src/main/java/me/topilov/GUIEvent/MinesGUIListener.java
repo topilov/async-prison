@@ -1,102 +1,57 @@
 package me.topilov.GUIEvent;
 
 import me.topilov.App;
-import me.topilov.utils.MinesManager;
-import org.bukkit.Material;
+import me.topilov.utils.ConfigManager;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.ItemStack;
 
 public class MinesGUIListener implements Listener {
 
-    MinesManager manager = App.getInstance().manager;
+    ConfigManager manager = App.getInstance().manager;
 
     @EventHandler
     public void onClick(InventoryClickEvent e) {
         Player player = (Player) e.getWhoClicked();
         ItemStack clickedItem = e.getCurrentItem();
 
-        if (e.getInventory().getTitle().equalsIgnoreCase("§7Шахты 0")) {
-
-            FileConfiguration file = manager.getConfig();
-            file.getConfigurationSection("mines1").getKeys(false).forEach(mine -> {
-                String name = file.getString("mines1." + mine + ".name");
-                int level = file.getInt("mines1." + mine + ".level");
-            /*
-                Проверка на имя предмета, далее подбирается из конфига к этому имени требуемый уровень
-            */
-                if (clickedItem.getItemMeta().getDisplayName().equals(name)) {
-                    player.chat("/mine " + level);
-                    e.setCancelled(true);
-                }
-
-            });
-        }
-
-        if (e.getInventory().getTitle().equalsIgnoreCase("§7Шахты 1")) {
-
-            FileConfiguration file = manager.getConfig();
-            file.getConfigurationSection("mines2").getKeys(false).forEach(mine -> {
-                String name = file.getString("mines2." + mine + ".name");
-                int level = file.getInt("mines2." + mine + ".level");
-            /*
-                Проверка на имя предмета, далее подбирается из конфига к этому имени требуемый уровень
-            */
-                if (clickedItem.getItemMeta().getDisplayName().equals(name)) {
-                    player.chat("/mine " + level);
-                    e.setCancelled(true);
-                }
-
-            });
-        }
-
-        /*
-            Проверка находится ли игрок
-            в меню "Шахты", чтобы правильно
-            использовать вспомогательные предметы
-            в инвентаре
-        */
         if (e.getInventory().getTitle().contains("Шахты")) {
+            if (clickedItem == null) return;
+            if (!clickedItem.hasItemMeta()) return;
 
-        /*
-            Следующая страница
-        */
-            if (clickedItem.getType() == Material.ARROW && clickedItem.getItemMeta().getDisplayName().contains("§6Следующая страница")) {
-                if (e.getInventory().getTitle().contains("§7Шахты 0")) {
-                    player.chat("/mines 2");
-                }
-                if (e.getInventory().getTitle().contains("§7Шахты 1")) {
-                    player.sendMessage("§cСледующей страницы пока что нет");
-                    e.setCancelled(true);
-                }
+            if (e.getClickedInventory().getType() == InventoryType.PLAYER) {
+                e.setCancelled(true);
             }
 
-        /*
-            Предыдущая страница
-        */
-            if (clickedItem.getType() == Material.ARROW && clickedItem.getItemMeta().getDisplayName().contains("§6Предыдущая страница")) {
-                if (e.getInventory().getTitle().contains("§7Шахты 1")) {
-                    player.chat("/mines");
-                }
+            if (clickedItem.getItemMeta().getDisplayName().contains("§cЗаблокировано")) {
+                e.setCancelled(true);
+                return;
             }
-
-        /*
-            Назад
-        */
-            if (clickedItem.getItemMeta().getDisplayName().contains("§eНазад")) {
+            if (clickedItem.getItemMeta().getDisplayName().contains("§eНазад в меню")) {
                 player.chat("/menu");
                 e.setCancelled(true);
             }
+        }
 
-        /*
-            Заполнители
-        */
-            if (clickedItem.getType() == Material.BLACK_STAINED_GLASS_PANE) {
-                e.setCancelled(true);
-            }
+        if (e.getInventory().getTitle().equalsIgnoreCase("Шахты")) {
+
+            FileConfiguration file = manager.getMinesConfig();
+            file.getConfigurationSection("mines").getKeys(false).forEach(mine -> {
+                String name = file.getString("mines." + mine + ".name");
+                int level = file.getInt("mines." + mine + ".level");
+            /*
+                Проверка на имя предмета, далее подбирается из конфига к этому имени требуемый уровень
+            */
+                if (clickedItem.getItemMeta().getDisplayName().equals(name)) {
+                    player.chat("/mine " + level);
+                    e.setCancelled(true);
+                }
+
+            });
         }
     }
 }

@@ -7,3 +7,9 @@ commands:
   mines: {}
   mine: {}
   shop: {}
+  eco: {}
+  sell: {}
+  prison: {}
+  add_mine: {}
+  test: {}
+  thanks: {}

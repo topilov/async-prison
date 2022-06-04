@@ -2,7 +2,8 @@ package me.topilov.GUIEvent;
 
 import me.topilov.App;
 import me.topilov.DataBase.SQLGetter;
-import me.topilov.utils.MinesManager;
+import me.topilov.utils.ConfigManager;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -11,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -19,99 +21,82 @@ import java.util.List;
 
 public class ShopGUIListener implements Listener {
 
-    MinesManager manager = App.getInstance().manager;
+    Economy economy = App.economy;
+    ConfigManager manager = App.getInstance().manager;
     SQLGetter data = App.getInstance().data;
+    FileConfiguration messages = manager.getMessagesConfig();
 
     @EventHandler
     public void onClick(InventoryClickEvent e) {
         Player player = (Player) e.getWhoClicked();
         ItemStack clickedItem = e.getCurrentItem();
 
-        if (e.getInventory().getTitle().equalsIgnoreCase("§7Магазин")) {
 
-            if (clickedItem == null) return;
-            if (!clickedItem.hasItemMeta()) return;
+        /*
+            Если игрок находится в меню улучшения
+        */
+            if (e.getInventory().getTitle().equalsIgnoreCase("Улучшения")) {
 
-            if (clickedItem.getItemMeta().getDisplayName().contains("§cMAX")) {
-                player.sendMessage("§cПредмет имеет максимальный уровень");
-                e.setCancelled(true);
-                return;
-            }
+                if (clickedItem == null) return;
+                if (!clickedItem.hasItemMeta()) return;
 
-            if (clickedItem.getType() == Material.LEATHER_HELMET || clickedItem.getType() == Material.IRON_HELMET || clickedItem.getType() == Material.DIAMOND_HELMET) {
-                upgradeHelmet(e, player);
-            }
-            if (clickedItem.getType() == Material.LEATHER_CHESTPLATE || clickedItem.getType() == Material.IRON_CHESTPLATE || clickedItem.getType() == Material.DIAMOND_CHESTPLATE) {
-                upgradeChestPlate(e, player);
-            }
-            if (clickedItem.getType() == Material.LEATHER_LEGGINGS || clickedItem.getType() == Material.IRON_LEGGINGS || clickedItem.getType() == Material.DIAMOND_LEGGINGS) {
-                upgradeLeggings(e, player);
-            }
-            if (clickedItem.getType() == Material.LEATHER_BOOTS || clickedItem.getType() == Material.IRON_BOOTS || clickedItem.getType() == Material.DIAMOND_BOOTS) {
-                upgradeBoots(e, player);
-            }
-            if (clickedItem.getType() == Material.WOODEN_SWORD || clickedItem.getType() == Material.IRON_SWORD || clickedItem.getType() == Material.DIAMOND_SWORD) {
-                upgradeSword(e, player);
-            }
-            if (clickedItem.getType() == Material.WOODEN_PICKAXE || clickedItem.getType() == Material.IRON_PICKAXE || clickedItem.getType() == Material.DIAMOND_PICKAXE) {
-                upgradePickaxe(e, player);
-            }
-            if (clickedItem.getType() == Material.WOODEN_SHOVEL || clickedItem.getType() == Material.IRON_SHOVEL || clickedItem.getType() == Material.DIAMOND_SHOVEL) {
-                upgradeShovel(e, player);
-            }
-            if (clickedItem.getType() == Material.WOODEN_AXE || clickedItem.getType() == Material.IRON_AXE || clickedItem.getType() == Material.DIAMOND_AXE) {
-                upgradeAxe(e, player);
-            }
-            if (clickedItem.getType() == Material.SHEARS) {
-                upgradeShears(e, player);
-            }
+                if (e.getClickedInventory().getType() == InventoryType.PLAYER) {
+                    e.setCancelled(true);
+                }
 
+                if (clickedItem.getItemMeta().getDisplayName().contains("§cНельзя улучшить")) {
+                    e.setCancelled(true);
+                    return;
+                }
 
-
-
-            if (clickedItem.getType() == Material.BLACK_STAINED_GLASS_PANE) {
-                e.setCancelled(true);
-            }
-
-            if (clickedItem.getItemMeta().getDisplayName().contains("§eНазад")) {
-                player.chat("/menu");
-                e.setCancelled(true);
-            }
-
-            if (clickedItem.getItemMeta().getDisplayName().contains("§eМагазин предметов")) {
-                e.setCancelled(true);
-            }
-
-            if (clickedItem.getItemMeta().getDisplayName().contains("§eПокупка доната")) {
-                player.sendMessage("§cВ разработке");
-                e.setCancelled(true);
-            }
-
-            if (clickedItem.getItemMeta().getDisplayName().contains("§eПосохи")) {
-                player.sendMessage("§cВ разработке");
-                e.setCancelled(true);
-            }
-
-            if (clickedItem.getItemMeta().getDisplayName().contains("§eПерки")) {
-                player.sendMessage("§cВ разработке");
-                e.setCancelled(true);
-            }
+                if (e.getSlot() == 15) {
+                    upgradeHelmet(e, player);
+                }
+                if (e.getSlot() == 24) {
+                    upgradeChestPlate(e, player);
+                }
+                if (e.getSlot() == 33) {
+                    upgradeLeggings(e, player);
+                }
+                if (e.getSlot() == 42) {
+                    upgradeBoots(e, player);
+                }
+                if (e.getSlot() == 12) {
+                    upgradeSword(e, player);
+                }
+                if ((e.getSlot() == 21)) {
+                    upgradePickaxe(e, player);
+                }
+                if (e.getSlot() == 39) {
+                    upgradeShovel(e, player);
+                }
+                if (e.getSlot() == 30) {
+                    upgradeAxe(e, player);
+                }
         }
+
     }
 
     void upgradeHelmet(InventoryClickEvent e, Player player) {
-        FileConfiguration file = manager.getConfig();
+        FileConfiguration file = manager.getShopConfig();
 
-        manager.getConfig().getConfigurationSection("helmet").getKeys(false).forEach(key -> {
+        manager.getShopConfig().getConfigurationSection("helmet").getKeys(false).forEach(key -> {
             String name = file.getString("helmet." + key + ".name");
             int enchant = file.getInt("helmet." + key + ".enchant");
-            int level = file.getInt("helmet." + key + ".level");
-            int levelTool = data.getLevelHelmet(player.getUniqueId());
+            int price = file.getInt("helmet." + key + ".price");
+            int requiredLevel = file.getInt("helmet." + key + ".level");
+            int playerLevel = data.getLevelHelmet(player.getUniqueId());
             ItemStack item = new ItemStack(Material.getMaterial(file.getString("helmet." + key + ".material").toUpperCase()));
-            String removeItem = file.getString("helmet." + (level - 1) + ".material");
+            String removeItem = file.getString("helmet." + (requiredLevel - 1) + ".material");
 
 
-            if (level == levelTool) {
+            if (playerLevel == requiredLevel) {
+
+                if (economy.getBalance(player) < price) {
+                    player.sendMessage("" + messages.getString("messages.not_enough_money"));
+                    e.setCancelled(true);
+                    return;
+                }
 
                 App.getInstance().getServer().dispatchCommand(App.getInstance().getServer().getConsoleSender(), "minecraft:clear " + player.getName() + " " + removeItem + " 1");
 
@@ -123,12 +108,13 @@ public class ShopGUIListener implements Listener {
                 itemMeta.setUnbreakable(true);
                 item.setItemMeta(itemMeta);
 
-                player.getInventory().addItem(item);
+                player.getInventory().setHelmet(item);
                 e.setCancelled(true);
 
                 Bukkit.getScheduler().runTaskLater(App.getInstance(), new Runnable() {
                     @Override
                     public void run() {
+                        economy.withdrawPlayer(player, price);
                         data.addLevelHelmet(player.getUniqueId(), 1);
                         player.chat("/shop");
                     }
@@ -138,18 +124,25 @@ public class ShopGUIListener implements Listener {
     }
 
     void upgradeChestPlate(InventoryClickEvent e, Player player) {
-        FileConfiguration file = manager.getConfig();
+        FileConfiguration file = manager.getShopConfig();
 
-        manager.getConfig().getConfigurationSection("chestplate").getKeys(false).forEach(key -> {
+        manager.getShopConfig().getConfigurationSection("chestplate").getKeys(false).forEach(key -> {
             String name = file.getString("chestplate." + key + ".name");
             int enchant = file.getInt("chestplate." + key + ".enchant");
-            int level = file.getInt("chestplate." + key + ".level");
-            int levelTool = data.getLevelChestPlate(player.getUniqueId());
+            int price = file.getInt("chestplate." + key + ".price");
+            int requiredLevel = file.getInt("chestplate." + key + ".level");
+            int playerLevel = data.getLevelChestPlate(player.getUniqueId());
             ItemStack item = new ItemStack(Material.getMaterial(file.getString("chestplate." + key + ".material").toUpperCase()));
-            String removeItem = file.getString("chestplate." + (level - 1) + ".material");
+            String removeItem = file.getString("chestplate." + (requiredLevel - 1) + ".material");
 
 
-            if (level == levelTool) {
+            if (playerLevel == requiredLevel) {
+
+                if (economy.getBalance(player) < price) {
+                    player.sendMessage("" + messages.getString("messages.not_enough_money"));
+                    e.setCancelled(true);
+                    return;
+                }
 
                 App.getInstance().getServer().dispatchCommand(App.getInstance().getServer().getConsoleSender(), "minecraft:clear " + player.getName() + " " + removeItem + " 1");
 
@@ -161,12 +154,13 @@ public class ShopGUIListener implements Listener {
                 itemMeta.setUnbreakable(true);
                 item.setItemMeta(itemMeta);
 
-                player.getInventory().addItem(item);
+                player.getInventory().setChestplate(item);
                 e.setCancelled(true);
 
                 Bukkit.getScheduler().runTaskLater(App.getInstance(), new Runnable() {
                     @Override
                     public void run() {
+                        economy.withdrawPlayer(player, price);
                         data.addLevelChestPlate(player.getUniqueId(), 1);
                         player.chat("/shop");
                     }
@@ -176,18 +170,25 @@ public class ShopGUIListener implements Listener {
     }
 
     void upgradeLeggings(InventoryClickEvent e, Player player) {
-        FileConfiguration file = manager.getConfig();
+        FileConfiguration file = manager.getShopConfig();
 
-        manager.getConfig().getConfigurationSection("leggings").getKeys(false).forEach(key -> {
+        manager.getShopConfig().getConfigurationSection("leggings").getKeys(false).forEach(key -> {
             String name = file.getString("leggings." + key + ".name");
             int enchant = file.getInt("leggings." + key + ".enchant");
-            int level = file.getInt("leggings." + key + ".level");
-            int levelTool = data.getLevelLeggings(player.getUniqueId());
+            int price = file.getInt("leggings." + key + ".price");
+            int requiredLevel = file.getInt("leggings." + key + ".level");
+            int playerLevel = data.getLevelLeggings(player.getUniqueId());
             ItemStack item = new ItemStack(Material.getMaterial(file.getString("leggings." + key + ".material").toUpperCase()));
-            String removeItem = file.getString("leggings." + (level - 1) + ".material");
+            String removeItem = file.getString("leggings." + (requiredLevel - 1) + ".material");
 
 
-            if (level == levelTool) {
+            if (playerLevel == requiredLevel) {
+
+                if (economy.getBalance(player) < price) {
+                    player.sendMessage("" + messages.getString("messages.not_enough_money"));
+                    e.setCancelled(true);
+                    return;
+                }
 
                 App.getInstance().getServer().dispatchCommand(App.getInstance().getServer().getConsoleSender(), "minecraft:clear " + player.getName() + " " + removeItem + " 1");
 
@@ -199,12 +200,13 @@ public class ShopGUIListener implements Listener {
                 itemMeta.setUnbreakable(true);
                 item.setItemMeta(itemMeta);
 
-                player.getInventory().addItem(item);
+                player.getInventory().setLeggings(item);
                 e.setCancelled(true);
 
                 Bukkit.getScheduler().runTaskLater(App.getInstance(), new Runnable() {
                     @Override
                     public void run() {
+                        economy.withdrawPlayer(player, price);
                         data.addLevelLeggings(player.getUniqueId(), 1);
                         player.chat("/shop");
                     }
@@ -214,11 +216,12 @@ public class ShopGUIListener implements Listener {
     }
 
     void upgradeBoots(InventoryClickEvent e, Player player) {
-        FileConfiguration file = manager.getConfig();
+        FileConfiguration file = manager.getShopConfig();
 
-        manager.getConfig().getConfigurationSection("boots").getKeys(false).forEach(key -> {
+        manager.getShopConfig().getConfigurationSection("boots").getKeys(false).forEach(key -> {
             String name = file.getString("boots." + key + ".name");
             int enchant = file.getInt("boots." + key + ".enchant");
+            int price = file.getInt("boots." + key + ".price");
             int level = file.getInt("boots." + key + ".level");
             int levelTool = data.getLevelBoots(player.getUniqueId());
             ItemStack item = new ItemStack(Material.getMaterial(file.getString("boots." + key + ".material").toUpperCase()));
@@ -226,6 +229,12 @@ public class ShopGUIListener implements Listener {
 
 
             if (level == levelTool) {
+
+                if (economy.getBalance(player) < price) {
+                    player.sendMessage("" + messages.getString("messages.not_enough_money"));
+                    e.setCancelled(true);
+                    return;
+                }
 
                 App.getInstance().getServer().dispatchCommand(App.getInstance().getServer().getConsoleSender(), "minecraft:clear " + player.getName() + " " + removeItem + " 1");
 
@@ -237,12 +246,13 @@ public class ShopGUIListener implements Listener {
                 itemMeta.setUnbreakable(true);
                 item.setItemMeta(itemMeta);
 
-                player.getInventory().addItem(item);
+                player.getInventory().setBoots(item);
                 e.setCancelled(true);
 
                 Bukkit.getScheduler().runTaskLater(App.getInstance(), new Runnable() {
                     @Override
                     public void run() {
+                        economy.withdrawPlayer(player, price);
                         data.addLevelBoots(player.getUniqueId(), 1);
                         player.chat("/shop");
                     }
@@ -252,18 +262,25 @@ public class ShopGUIListener implements Listener {
     }
 
     void upgradeSword(InventoryClickEvent e, Player player) {
-        FileConfiguration file = manager.getConfig();
+        FileConfiguration file = manager.getShopConfig();
 
-        manager.getConfig().getConfigurationSection("sword").getKeys(false).forEach(key -> {
+        manager.getShopConfig().getConfigurationSection("sword").getKeys(false).forEach(key -> {
             String name = file.getString("sword." + key + ".name");
             int enchant = file.getInt("sword." + key + ".enchant");
-            int level = file.getInt("sword." + key + ".level");
-            int levelTool = data.getLevelSword(player.getUniqueId());
+            int price = file.getInt("sword." + key + ".price");
+            int requiredLevel = file.getInt("sword." + key + ".level");
+            int playerLevel = data.getLevelSword(player.getUniqueId());
             ItemStack item = new ItemStack(Material.getMaterial(file.getString("sword." + key + ".material").toUpperCase()));
-            String removeItem = file.getString("sword." + (level - 1) + ".material");
+            String removeItem = file.getString("sword." + (requiredLevel - 1) + ".material");
 
 
-            if (level == levelTool) {
+            if (playerLevel == requiredLevel) {
+
+                if (economy.getBalance(player) < price) {
+                    player.sendMessage("" + messages.getString("messages.not_enough_money"));
+                    e.setCancelled(true);
+                    return;
+                }
 
                 App.getInstance().getServer().dispatchCommand(App.getInstance().getServer().getConsoleSender(), "minecraft:clear " + player.getName() + " " + removeItem + " 1");
 
@@ -281,6 +298,7 @@ public class ShopGUIListener implements Listener {
                 Bukkit.getScheduler().runTaskLater(App.getInstance(), new Runnable() {
                     @Override
                     public void run() {
+                        economy.withdrawPlayer(player, price);
                         data.addLevelSword(player.getUniqueId(), 1);
                         player.chat("/shop");
                     }
@@ -290,18 +308,25 @@ public class ShopGUIListener implements Listener {
     }
 
     void upgradePickaxe(InventoryClickEvent e, Player player) {
-        FileConfiguration file = manager.getConfig();
+        FileConfiguration file = manager.getShopConfig();
 
-        manager.getConfig().getConfigurationSection("pickaxe").getKeys(false).forEach(key -> {
+        manager.getShopConfig().getConfigurationSection("pickaxe").getKeys(false).forEach(key -> {
             String name = file.getString("pickaxe." + key + ".name");
             int enchant = file.getInt("pickaxe." + key + ".enchant");
-            int level = file.getInt("pickaxe." + key + ".level");
-            int levelTool = data.getLevelPickaxe(player.getUniqueId());
+            int price = file.getInt("pickaxe." + key + ".price");
+            int requiredLevel = file.getInt("pickaxe." + key + ".level");
+            int playerLevel = data.getLevelPickaxe(player.getUniqueId());
             ItemStack item = new ItemStack(Material.getMaterial(file.getString("pickaxe." + key + ".material").toUpperCase()));
-            String removeItem = file.getString("pickaxe." + (level - 1) + ".material");
+            String removeItem = file.getString("pickaxe." + (requiredLevel - 1) + ".material");
 
 
-            if (level == levelTool) {
+            if (playerLevel == requiredLevel) {
+
+                if (economy.getBalance(player) < price) {
+                    player.sendMessage("" + messages.getString("messages.not_enough_money"));
+                    e.setCancelled(true);
+                    return;
+                }
 
                 App.getInstance().getServer().dispatchCommand(App.getInstance().getServer().getConsoleSender(), "minecraft:clear " + player.getName() + " " + removeItem + " 1");
 
@@ -319,6 +344,7 @@ public class ShopGUIListener implements Listener {
                 Bukkit.getScheduler().runTaskLater(App.getInstance(), new Runnable() {
                     @Override
                     public void run() {
+                        economy.withdrawPlayer(player, price);
                         data.addLevelPickaxe(player.getUniqueId(), 1);
                         player.chat("/shop");
                     }
@@ -328,18 +354,25 @@ public class ShopGUIListener implements Listener {
     }
 
     void upgradeShovel(InventoryClickEvent e, Player player) {
-        FileConfiguration file = manager.getConfig();
+        FileConfiguration file = manager.getShopConfig();
 
-        manager.getConfig().getConfigurationSection("shovel").getKeys(false).forEach(key -> {
+        manager.getShopConfig().getConfigurationSection("shovel").getKeys(false).forEach(key -> {
             String name = file.getString("shovel." + key + ".name");
             int enchant = file.getInt("shovel." + key + ".enchant");
-            int level = file.getInt("shovel." + key + ".level");
-            int levelTool = data.getLevelShovel(player.getUniqueId());
+            int price = file.getInt("shovel." + key + ".price");
+            int requiredLevel = file.getInt("shovel." + key + ".level");
+            int playerLevel = data.getLevelShovel(player.getUniqueId());
             ItemStack item = new ItemStack(Material.getMaterial(file.getString("shovel." + key + ".material").toUpperCase()));
-            String removeItem = file.getString("shovel." + (level - 1) + ".material");
+            String removeItem = file.getString("shovel." + (requiredLevel - 1) + ".material");
 
 
-            if (level == levelTool) {
+            if (playerLevel == requiredLevel) {
+
+                if (economy.getBalance(player) < price) {
+                    player.sendMessage("" + messages.getString("messages.not_enough_money"));
+                    e.setCancelled(true);
+                    return;
+                }
 
                 App.getInstance().getServer().dispatchCommand(App.getInstance().getServer().getConsoleSender(), "minecraft:clear " + player.getName() + " " + removeItem + " 1");
 
@@ -357,6 +390,7 @@ public class ShopGUIListener implements Listener {
                 Bukkit.getScheduler().runTaskLater(App.getInstance(), new Runnable() {
                     @Override
                     public void run() {
+                        economy.withdrawPlayer(player, price);
                         data.addLevelShovel(player.getUniqueId(), 1);
                         player.chat("/shop");
                     }
@@ -366,20 +400,30 @@ public class ShopGUIListener implements Listener {
     }
 
     void upgradeAxe(InventoryClickEvent e, Player player) {
-        FileConfiguration file = manager.getConfig();
+        FileConfiguration file = manager.getShopConfig();
 
-        manager.getConfig().getConfigurationSection("axe").getKeys(false).forEach(key -> {
+        manager.getShopConfig().getConfigurationSection("axe").getKeys(false).forEach(key -> {
             String name = file.getString("axe." + key + ".name");
             int enchant = file.getInt("axe." + key + ".enchant");
-            int level = file.getInt("axe." + key + ".level");
-            int levelTool = data.getLevelAxe(player.getUniqueId());
+            int price = file.getInt("axe." + key + ".price");
+            int requiredLevel = file.getInt("axe." + key + ".level");
+            int playerLevel = data.getLevelAxe(player.getUniqueId());
             ItemStack item = new ItemStack(Material.getMaterial(file.getString("axe." + key + ".material").toUpperCase()));
-            String removeItem = file.getString("axe." + (level - 1) + ".material");
 
 
-            if (level == levelTool) {
+            if (playerLevel == requiredLevel) {
 
-                App.getInstance().getServer().dispatchCommand(App.getInstance().getServer().getConsoleSender(), "minecraft:clear " + player.getName() + " " + removeItem + " 1");
+                if (economy.getBalance(player) < price) {
+                    player.sendMessage("" + messages.getString("messages.not_enough_money"));
+                    e.setCancelled(true);
+                    return;
+                }
+
+                if (playerLevel == 0) {
+                    App.getInstance().getServer().dispatchCommand(App.getInstance().getServer().getConsoleSender(), "minecraft:clear " + player.getName() + " " + file.getString("axe." + requiredLevel + ".material") + " 1");
+                } else {
+                    App.getInstance().getServer().dispatchCommand(App.getInstance().getServer().getConsoleSender(), "minecraft:clear " + player.getName() + " " + file.getString("axe." + (requiredLevel - 1) + ".material") + " 1");
+                }
 
 
                 ItemMeta itemMeta = item.getItemMeta();
@@ -395,6 +439,7 @@ public class ShopGUIListener implements Listener {
                 Bukkit.getScheduler().runTaskLater(App.getInstance(), new Runnable() {
                     @Override
                     public void run() {
+                        economy.withdrawPlayer(player, price);
                         data.addLevelAxe(player.getUniqueId(), 1);
                         player.chat("/shop");
                     }
@@ -404,18 +449,25 @@ public class ShopGUIListener implements Listener {
     }
 
     void upgradeShears(InventoryClickEvent e, Player player) {
-        FileConfiguration file = manager.getConfig();
+        FileConfiguration file = manager.getShopConfig();
 
-        manager.getConfig().getConfigurationSection("shears").getKeys(false).forEach(key -> {
+        manager.getShopConfig().getConfigurationSection("shears").getKeys(false).forEach(key -> {
             String name = file.getString("shears." + key + ".name");
             int enchant = file.getInt("shears." + key + ".enchant");
-            int level = file.getInt("shears." + key + ".level");
-            int levelTool = data.getLevelShears(player.getUniqueId());
+            int price = file.getInt("shears." + key + ".price");
+            int requiredLevel = file.getInt("shears." + key + ".level");
+            int playerLevel = data.getLevelShears(player.getUniqueId());
             ItemStack item = new ItemStack(Material.getMaterial(file.getString("shears." + key + ".material").toUpperCase()));
-            String removeItem = file.getString("shears." + (level - 1) + ".material");
+            String removeItem = file.getString("shears." + (requiredLevel - 1) + ".material");
 
 
-            if (level == levelTool) {
+            if (playerLevel == requiredLevel) {
+
+                if (economy.getBalance(player) < price) {
+                    player.sendMessage("" + messages.getString("messages.not_enough_money"));
+                    e.setCancelled(true);
+                    return;
+                }
 
                 App.getInstance().getServer().dispatchCommand(App.getInstance().getServer().getConsoleSender(), "minecraft:clear " + player.getName() + " " + removeItem + " 1");
 
@@ -433,6 +485,7 @@ public class ShopGUIListener implements Listener {
                 Bukkit.getScheduler().runTaskLater(App.getInstance(), new Runnable() {
                     @Override
                     public void run() {
+                        economy.withdrawPlayer(player, price);
                         data.addLevelShears(player.getUniqueId(), 1);
                         player.chat("/shop");
                     }
